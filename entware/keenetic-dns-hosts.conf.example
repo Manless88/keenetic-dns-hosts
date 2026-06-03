@@ -1,0 +1,16 @@
+# Keenetic web address used only to verify panel login through /auth.
+ROUTER_HOST=192.168.1.1
+
+# Local Keenetic RCI endpoint used for reading and writing router configuration.
+RCI_URL=http://localhost:79/rci
+
+# Service bind address and port.
+APP_HOST=0.0.0.0
+APP_PORT=3333
+
+# Persistent application data.
+DATA_DIR=/opt/var/lib/keenetic-dns-hosts
+
+# Background MAC-to-IP synchronization for aliases bound to registered clients.
+AUTO_SYNC=1
+SYNC_INTERVAL=30

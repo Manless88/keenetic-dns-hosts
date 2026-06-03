@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Keenetic DNS Hosts</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section id="loginHeader">
+        <header class="topbar login-topbar">
+          <div>
+            <h1>Keenetic DNS Hosts</h1>
+            <p>Вход в панель управления hostname-алиасами Keenetic.</p>
+          </div>
+        </header>
+      </section>
+
+      <section id="loginPanel" class="login-panel panel">
+        <h2>Вход</h2>
+        <form id="loginForm" class="form-panel">
+          <label>
+            Пользователь Keenetic
+            <input id="loginUserInput" autocomplete="username" value="admin" />
+          </label>
+          <label>
+            Пароль Keenetic
+            <input id="loginPasswordInput" type="password" autocomplete="current-password" />
+          </label>
+          <button type="submit">Войти</button>
+          <p id="loginMessage" class="message"></p>
+        </form>
+      </section>
+
+      <section id="appPanel" class="is-hidden">
+        <header class="topbar">
+          <div>
+            <h1>Keenetic DNS Hosts <span id="headerVersion" class="header-version"></span></h1>
+            <p>Hostname-алиасы Keenetic: просмотр, добавление и удаление записей DNS роутера.</p>
+          </div>
+          <div class="actions">
+            <button id="logoutBtn" class="icon-button" title="Завершить текущий сеанс">Выйти</button>
+          </div>
+        </header>
+
+        <section class="service-panel panel">
+          <div class="panel-title">
+            <h2>Сервис и синхронизация</h2>
+          </div>
+          <div class="service-grid">
+            <div>
+              <span class="service-label">Демон</span>
+              <strong id="daemonState">Проверяем...</strong>
+            </div>
+            <div>
+              <span class="service-label">PID</span>
+              <strong id="daemonPid">-</strong>
+            </div>
+            <div>
+              <span class="service-label">Синхронизация</span>
+              <strong id="syncState">-</strong>
+            </div>
+            <div>
+              <span class="service-label">Последний запуск</span>
+              <strong id="syncLastRun">-</strong>
+            </div>
+          </div>
+          <div class="service-actions">
+            <button id="syncNowBtn">Синхронизировать сейчас</button>
+            <button id="serviceToggleBtn" class="icon-button">Старт</button>
+          </div>
+          <p id="serviceMessage" class="message"></p>
+        </section>
+
+        <section class="band">
+          <div class="panel">
+            <div class="panel-title">
+              <h2>Алиасы hostname</h2>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Hostname</th>
+                  <th>IP-адрес</th>
+                  <th>Источник</th>
+                  <th>Состояние</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="hostsBody"></tbody>
+            </table>
+          </div>
+
+          <form id="hostForm" class="panel form-panel">
+            <h2>Добавить алиас</h2>
+            <label>
+              Hostname
+              <input id="hostnameInput" name="hostname" placeholder="router.remote" required />
+            </label>
+            <label>
+              Тип привязки
+              <select id="modeInput" name="mode">
+                <option value="client">Зарегистрированный клиент</option>
+                <option value="manual">IP вручную</option>
+              </select>
+            </label>
+            <label id="clientField">
+              Клиент
+              <select id="macInput" name="mac"></select>
+            </label>
+            <label id="ipField" hidden>
+              IPv4-адрес
+              <input id="ipInput" name="ip" placeholder="192.0.2.10" />
+            </label>
+            <button type="submit">Сохранить алиас</button>
+            <p id="formMessage" class="message"></p>
+          </form>
+        </section>
+        <p id="routerMessage" class="message footer-message"></p>
+      </section>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+</html>

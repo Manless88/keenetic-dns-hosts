@@ -1,0 +1,72 @@
+#!/opt/bin/sh
+
+ENABLED=yes
+PROCS=keenetic-dns-hosts
+SCRIPT=/opt/share/keenetic-dns-hosts/server.py
+PYTHON=/opt/bin/python3
+PIDFILE=/opt/var/run/keenetic-dns-hosts.pid
+LOGFILE=/opt/var/log/keenetic-dns-hosts.log
+CONFIG=/opt/etc/keenetic-dns-hosts.conf
+
+[ -r "$CONFIG" ] && . "$CONFIG"
+
+is_running() {
+    [ -f "$PIDFILE" ] || return 1
+    pid="$(cat "$PIDFILE" 2>/dev/null || true)"
+    [ -n "$pid" ] || return 1
+    kill -0 "$pid" 2>/dev/null
+}
+
+start() {
+    [ "$ENABLED" = "yes" ] || exit 0
+    if is_running; then
+        echo "$PROCS is already running, pid $(cat "$PIDFILE")"
+        return 0
+    fi
+    [ -x "$PYTHON" ] || {
+        echo "python3 is not installed: opkg install python3"
+        exit 1
+    }
+    [ -r "$SCRIPT" ] || {
+        echo "service script not found: $SCRIPT"
+        exit 1
+    }
+    mkdir -p /opt/var/run /opt/var/log "${DATA_DIR:-/opt/var/lib/keenetic-dns-hosts}"
+    echo "Starting $PROCS"
+    start-stop-daemon -S -q -b -m -p "$PIDFILE" -x "$PYTHON" -- "$SCRIPT" >> "$LOGFILE" 2>&1
+}
+
+stop() {
+    echo "Stopping $PROCS"
+    start-stop-daemon -K -q -p "$PIDFILE"
+    rm -f "$PIDFILE"
+}
+
+restart() {
+    stop
+    sleep 1
+    start
+}
+
+status() {
+    if is_running; then
+        echo "$PROCS is running, pid $(cat "$PIDFILE")"
+        return 0
+    fi
+    rm -f "$PIDFILE"
+    echo "$PROCS is not running"
+    return 1
+}
+
+case "$1" in
+    start) start ;;
+    stop) stop ;;
+    restart) restart ;;
+    status) status; exit $? ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|status}"
+        exit 1
+        ;;
+esac
+
+exit 0

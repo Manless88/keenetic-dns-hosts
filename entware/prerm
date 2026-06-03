@@ -1,0 +1,4 @@
+#!/bin/sh
+
+/opt/etc/init.d/S89keenetic-dns-hosts stop >/dev/null 2>&1 || true
+exit 0

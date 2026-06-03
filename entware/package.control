@@ -1,0 +1,9 @@
+Package: keenetic-dns-hosts
+Version: 0.2.0
+Architecture: all
+Maintainer: keenetic-dns-hosts
+Depends: python3
+Section: net
+Priority: optional
+License: MIT
+Description: Web panel for managing Keenetic hostname aliases.

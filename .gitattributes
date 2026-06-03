@@ -1,0 +1,14 @@
+* text=auto
+
+.gitattributes text eol=lf
+*.py text eol=lf
+README.md text eol=lf
+*.sh text eol=lf
+Makefile text eol=lf
+VERSION text eol=lf
+entware/S89keenetic-dns-hosts text eol=lf
+entware/conffiles text eol=lf
+entware/package.control text eol=lf
+entware/postinst text eol=lf
+entware/prerm text eol=lf
+entware/*.example text eol=lf

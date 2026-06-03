@@ -1,0 +1,89 @@
+#!/bin/sh
+set -eu
+
+CONFIG=/opt/etc/keenetic-dns-hosts.conf
+EXAMPLE=/opt/etc/keenetic-dns-hosts.conf.example
+INIT=/opt/etc/init.d/S89keenetic-dns-hosts
+DATA_DIR=/opt/var/lib/keenetic-dns-hosts
+DEFAULT_PORT=3333
+
+get_config_value() {
+    key="$1"
+    file="$2"
+    sed -n "s/^${key}=//p" "$file" 2>/dev/null | tail -n 1
+}
+
+set_config_value() {
+    key="$1"
+    value="$2"
+    file="$3"
+    if grep -q "^${key}=" "$file"; then
+        sed -i "s/^${key}=.*/${key}=${value}/" "$file"
+    else
+        printf '%s=%s\n' "$key" "$value" >> "$file"
+    fi
+}
+
+valid_port() {
+    case "$1" in
+        ''|*[!0-9]*) return 1 ;;
+    esac
+    [ "$1" -ge 1 ] 2>/dev/null && [ "$1" -le 65535 ] 2>/dev/null
+}
+
+prompt_port() {
+    current_port="$(get_config_value APP_PORT "$CONFIG")"
+    [ -n "$current_port" ] || current_port="$DEFAULT_PORT"
+
+    if [ -r /dev/tty ] && [ -w /dev/tty ]; then
+        printf 'Web panel port [%s]: ' "$current_port" > /dev/tty
+        read -r selected_port < /dev/tty || selected_port=""
+        [ -n "$selected_port" ] || selected_port="$current_port"
+        while ! valid_port "$selected_port"; do
+            printf 'Invalid port. Enter 1-65535 [%s]: ' "$current_port" > /dev/tty
+            read -r selected_port < /dev/tty || selected_port=""
+            [ -n "$selected_port" ] || selected_port="$current_port"
+        done
+    else
+        selected_port="$current_port"
+    fi
+
+    set_config_value APP_PORT "$selected_port" "$CONFIG"
+}
+
+mkdir -p "$DATA_DIR" /opt/var/log /opt/var/run
+
+if [ ! -f "$CONFIG" ]; then
+    cp "$EXAMPLE" "$CONFIG"
+    chmod 600 "$CONFIG"
+    prompt_port
+elif [ -z "$(get_config_value APP_PORT "$CONFIG")" ]; then
+    set_config_value APP_PORT "$DEFAULT_PORT" "$CONFIG"
+fi
+
+chmod +x "$INIT"
+
+ip_addr=$(ip -f inet addr show dev br0 2>/dev/null | sed -n 's/.*inet \([0-9.]\+\).*/\1/p' | head -n 1)
+[ -n "$ip_addr" ] || ip_addr="<router-ip>"
+app_port="$(get_config_value APP_PORT "$CONFIG")"
+[ -n "$app_port" ] || app_port="$DEFAULT_PORT"
+
+if "$INIT" restart >/dev/null 2>&1; then
+    sleep 1
+    if "$INIT" status >/dev/null 2>&1; then
+        service_status=running
+    else
+        service_status=failed
+    fi
+else
+    service_status=failed
+fi
+
+echo "Keenetic DNS Hosts installed."
+echo "Edit configuration: $CONFIG"
+echo "Service: $INIT restart"
+if [ "$service_status" = "failed" ]; then
+    echo "Service did not start. Check log: /opt/var/log/keenetic-dns-hosts.log"
+else
+    echo "Web panel: http://$ip_addr:$app_port/"
+fi
